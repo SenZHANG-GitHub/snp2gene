@@ -1,0 +1,51 @@
+##################################################
+## How GGG paper deal with gene data
+1) Download gene info(hg19) from UCSC and map snp->gene
+2) Choose only the genes within specified PPI network to reduce the number of interactions
+3) Suppose n1 and n2 are the snp numbers in two genes, we have in total n1*n2 interactions. Restrict n1*n2 <= 500, if >, then divided into subgroups
+
+##################################################
+## The genome build of CUHK data
+1) NCBI build 37
+2) Equivalently, GRCh37 or hg19
+
+##################################################
+## Useful description for gene data from UCSC
+1) http://genome.ucsc.edu/cgi-bin/hgTables?hgsid=597205919_i80Fe5x8RP4DAsD0l0aC20iFu0E5&hgta_doSchemaDb=hg38&hgta_doSchemaTable=kgAlias
+2) http://genome.ucsc.edu/cgi-bin/hgTables?hgsid=597205919_i80Fe5x8RP4DAsD0l0aC20iFu0E5&hgta_doSchemaDb=hg38&hgta_doSchemaTable=knownIsoforms 
+3) http://genome.ucsc.edu/cgi-bin/hgTables?hgsid=597205919_i80Fe5x8RP4DAsD0l0aC20iFu0E5&hgta_doSchemaDb=hg38&hgta_doSchemaTable=knownGene
+4) http://genome.ucsc.edu/cgi-bin/hgTables?hgsid=597205919_i80Fe5x8RP4DAsD0l0aC20iFu0E5&hgta_doSchemaDb=hg38&hgta_doSchemaTable=knownCanonical
+5) http://genomewiki.ucsc.edu/genecats/index.php/QAing_UCSC_Genes
+
+##################################################
+## The correct proceduer to enquery gene info from UCSC
+1) Check knownCanonical for clusterID, representative transcript, chr, bp(in the specified chr, both start pos and end pos)
+2) If in need, we can check KnownIsoforms for the transcipts within each clusterID
+3) Do analysis with the gene names and clusterID. Only do 4) for those significant genes.
+4) Use kgAlias/kgSpAlias to tranlate gene names into human-readable format
+5) In plink .map and .bim files, the bp positions are also the positions in the specified chromosome!
+
+##################################################
+## Procedure to get clean gene data
+Problems exits in knownCananical.txt
+1) exist "_", e.g. chr6_XXX_hap1
+2) chr is not ordered
+3) some of the bp_start is not ordered
+
+Procedure to get clean gene data
+1) Use clean_gene,py to get knowngenes_0/1/2.txt
+2) Use merge_gene.py to get <cleaned_genes.txt> which are ordered (either chr or bp_start within each chr)
+3) Use check_gene.py to check the order
+
+##################################################
+## Get the snp => gene data
+1) Use snp2gene.py to use <cleaned_genes.txt> and .map file to generate <genes_snps.txt>
+2) The format of <genes_snps.txt>
+
+   chr bp_start    bp_end  clusterID   genename    numberOfsnps    snp1    snp2    snp3    ...
+
+##################################################
+## Remove empty genes (no snps inside)
+1) Impemented in view_gene.py to generate <genes_snps_noempty.txt> 
+2) The format of <genes_snps_noempty.txt> is the same as <genes_snps.txt>
+3) Also show the stats and histogram in view_gene.py
